@@ -16,6 +16,15 @@ const STRINGS = {
 	"login": "Login",
 	"signup": "Sign up",
 
+	//FOOTER
+	"contactUs": "Contact us",
+  "socialMedia": "Social media",
+  
+  //FIREBASE ERRORS
+  "auth/weak-password": "Password should be at least 6 characters.",
+  "auth/invalid-email": "The email address is badly formatted.",
+  "auth/email-already-in-use": "The email address is already in use by another account.",
+
 	//HOME
 	"intro1": "Don't Waste your time waiting in lines ...",
 	"intro2": "We do it for you !",
@@ -26,13 +35,14 @@ const STRINGS = {
 	"waitDesc2": "Paris Games Week booth : up to 5 hours",
 	"waitDesc3": "New Smartphone release : up to 10 hours",
 	"waitDesc4": "Don't worry, we are here for you!",
-	"hireWaiter": "Hire a waiter !",
+	"hireWaiter": "Book a wait !",
 	"engage1": "Offer some of your time and get paid",
-	"becomeWaiter": "Become a waiter !",
-
-	//FOOTER
-	"contactUs": "Contact us",
-	"socialMedia": "Social media"
+  "becomeWaiter": "Become a waiter !",
+  
+  //BOOKING
+  "distanceFee": "Caution, for places outside of Paris, an additionnal fee may apply.",
+  "errorDate": "Booking date must be at least 24 hours away.",
+  "errorAddress": "The selected address is not valid.",
 };
 
 export default STRINGS;

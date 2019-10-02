@@ -1,24 +1,36 @@
 import React, { Component } from 'react';
-import { View, Text, TextInput, Button } from 'react-native';
-import WebPicker from '../components/WebPicker';
-import BaseScreen from '../layout/BaseComponent';
-import MapView from 'react-native-maps';
-import STYLES from '../constants/STYLES';
-import GoogleMapsAutoComplete from '../components/GoogleMapsAutoComplete';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { View, Text, Button } from 'react-native';
+import { connect } from 'react-redux';
+import { withGoogleMap, GoogleMap, Marker } from 'react-google-maps';
+import PlacesAutocomplete, { geocodeByAddress,getLatLng } from 'react-places-autocomplete';
 
-export default class Booking extends Component {
+import BaseScreen from '../layout/BaseComponent';
+import WebPicker from '../components/WebPicker';
+import ConfirmModal from '../components/modal/ConfirmModal';
+import { showConfirmModal } from '../reducers/reducerActions';
+import { navigate, getTranslation } from '../constants/HELPER';
+
+const GoogleMapContainer = withGoogleMap(props => <GoogleMap {...props} ref={props.handleMapMounted} />);
+
+class Booking extends Component {
   constructor(props){
     super(props);
     const val = this.getMinDateTime();
     this.state = { 
       minDate: val.minDate, minTime: val.minTime, 
       bookingDate: val.minDate, bookingTime: '12:00', 
+      center: { lat: 48.858370, lng: 2.294481 }, //Eiffel Tower
       address: '',
       marker: null,
-      errors: { date: '', time: '' } }
+      selectedAddress: '',
+      place : null,
+      errors: { date: '', time: '' } 
+    }
+		this.getTranslation = getTranslation.bind(this);
+		this.navigate = navigate.bind(this);
   }
 
+  //DATETIME
   getMinDateTime = () => {
     var date = new Date();
     date.setDate(date.getDate() + 1);
@@ -40,88 +52,213 @@ export default class Booking extends Component {
     return formattedDate;
   }
 
+  //SUBMIT
   validateForm = () => {
-    let errors = { date: ''};
-    if(new Date(`${this.state.minDate}T${this.state.minTime}`) >= new Date(`${this.state.bookingDate}T${this.state.bookingTime}`)){
-    console.log("KO")
-    errors.date = 'Booking date must be in at least 24 hours.';
-    }
+    let errors = { date: '', address: '' };
+    if(new Date(`${this.state.minDate}T${this.state.minTime}`) >= new Date(`${this.state.bookingDate}T${this.state.bookingTime}`))
+      errors.date = this.getTranslation('errorDate');
+    /*TODO : VALIDATE ADDRESS HERE
+    if(!isvalid(address)) //geocode?
+    errors.address = this.getTranslation('errorAddress');
+    */
     this.setState({errors});
-    if(errors.date == '')
-    this.bookWait();
+    if(errors.date == '' && errors.address == '')
+      this.props.showConfirmModal();
   }
 
-  bookWait = () => {
-    this.setState({address:'azeaze'})
-    //Call book function
-  }
-
+  //MAPS
   setMarker = (coord) => {
-    this.setState({marker: <MapView.Marker coordinate={{latitude:coord.latLng.lat(), longitude:coord.latLng.lng()}}/>})
+    this.setState({marker: <Marker coordinate={{latitude:coord.latLng.lat(), longitude:coord.latLng.lng()}}/>})
+  }
+
+  _attemptReverseGeocodeAsync = async (coords) => {
+    const url = `https://eu1.locationiq.com/v1/reverse.php?key=a6e4c1aab7ea2f&lat=${coords.latitude}&lon=${coords.longitude}&addresdetails=1&format=json`;
+    return fetch(url)
+    .then(function (response) {
+        return response.json()
+            .then(function (value) {
+                return value;
+            });
+    })
+    .catch((e)=>{return e})
+  };
+
+  onPress = (position) => {
+    const coords = {latitude:position.latLng.lat(), longitude:position.latLng.lng()};
+    this._attemptReverseGeocodeAsync(coords).then(result => {
+      console.log(result)
+      this.setState({
+        selectedAddress:result.display_name,
+        address:result.display_name,
+        marker: <Marker draggable={false} position={{lat:coords.latitude, lng:coords.longitude}}/>
+      })
+    })
+    .catch((error)=> {
+      console.error(error);
+    })
+  };
+
+  handleMapMounted = (map) => {
+    this.map = map;
+  }
+
+  //AUTOCOMPLETE
+  handleInputChange = address => {
+    this.setState({ address });
+  };
+
+  handleInputSelect = address => {
+    geocodeByAddress(address)
+      .then(results => getLatLng(results[0]))
+      .then(latLng => {
+          this.setState({
+            center: { 
+              lat: latLng.lat, 
+              lng: latLng.lng 
+            },
+            selectedAddress: address
+          })
+      })
+      .catch(error => console.error(error));
+  };
+
+  setSuggestion(suggestion, mode){
+    if(mode == "autocomplete"){
+      this.handleInputSelect(suggestion.description);
+    }    
+    this.setState({ 
+      address : suggestion.description,
+      place : {
+        id : suggestion.placeId,
+        name : suggestion.formattedSuggestion.mainText,
+        address : suggestion.formattedSuggestion.secondaryText
+      }
+    });
+    this.refs.autocomplete.handleInputOnBlur();
+  }
+
+  selectPlace(){
+    this.props.onSelectPlace({
+      ...this.state.place,
+      location : {
+          lat : this.state.center.lat,
+          lng : this.state.center.lng
+      }
+    });
   }
 
   render(){
-    console.log(this.state);
     return(
       <BaseScreen 
-      navigation={this.props.navigation}
-      content={
-        <View>
-          <WebPicker 
-          type={'date'}
-          onChange={(v)=> this.setState({ bookingDate: this.formatDate(new Date(v.target.value)) }) } 
-          min={ this.state.minDate } 
-          value={ this.state.bookingDate } 
-          />
-          <Text style={{color:'red'}}>{this.state.errors.date}</Text>
-          <WebPicker 
-          type='time'
-          onChange={(t)=>this.setState({ bookingTime : t.target.value})}
-          min='08:00'
-          max='22:00'
-          value={ this.state.bookingTime } 
-          />                     
-          <GooglePlacesAutocomplete
-  placeholder='Enter Location'
-  minLength={2}
-  autoFocus={false}
-  returnKeyType={'default'}
-  fetchDetails={true}
-  styles={{
-    textInputContainer: {
-      backgroundColor: 'rgba(0,0,0,0)',
-      borderTopWidth: 0,
-      borderBottomWidth:0
-    },
-    textInput: {
-      marginLeft: 0,
-      marginRight: 0,
-      height: 38,
-      color: '#5d5d5d',
-      fontSize: 16
-    },
-    predefinedPlacesDescription: {
-      color: '#1faadb'
-    },
-  }}
-  currentLocation={false}
-/>
-          <TextInput placeholder="Address" onChangeText={(address) => this.setState({address})} value={this.state.address}/>
-          <MapView 
-          style={STYLES.maps}
-          region={{
-              latitude: 48.858370,
-              longitude: 2.294481,
-              latitudeDelta: 0.1,
-              longitudeDelta: 0.05,
-          }}
-          onPress={(coord, point) => this.setMarker(coord, point)}>
-            {this.state.marker}
-          </MapView>
-          <Button title={'Submit'} onPress={()=>this.validateForm()}/>
-        </View>
-      }>
+        navigation={this.props.navigation}
+        content={
+          <View>
+            <View style={{flexDirection:'row'}}>       
+              <Text>Date</Text>       
+              <WebPicker 
+                type={'date'}
+                onChange={(v)=> this.setState({ bookingDate: this.formatDate(new Date(v.target.value)) }) } 
+                min={ this.state.minDate } 
+                value={ this.state.bookingDate } 
+              />
+              <Text style={{color:'red'}}>{this.state.errors.date}</Text>
+              <WebPicker 
+                type='time'
+                onChange={(t)=>this.setState({ bookingTime : t.target.value})}
+                min='08:00'
+                max='22:00'
+                value={ this.state.bookingTime } 
+              />          
+            </View>            
+            <View style={{height:"300"}}>
+              <GoogleMapContainer
+                handleMapMounted={this.handleMapMounted}
+                containerElement={<View style={{ flex : 1 }} />}
+                mapElement={<div style={{ minHeight: 500, margin: 8 }} />}
+                center={this.state.center}
+                onDragStart={this.props.onRegionChange}
+                onDragEnd={this.onDragEnd}
+                defaultZoom={15}
+                onClick={(position)=>this.onPress(position)}
+                defaultOptions={{
+                  streetViewControl: false,
+                  scaleControl: false,
+                  mapTypeControl: false,
+                  panControl: false,
+                  //zoomControl: false,
+                  rotateControl: false,
+                  fullscreenControl: false
+                }}
+              >
+                {this.state.marker}
+              </GoogleMapContainer>
+              
+              <View style={{width : "100%", position : "absolute", top : 48, left : 0, height: 45,paddingLeft: 15,paddingRight : 15}}>
+                <PlacesAutocomplete
+                  value={this.state.address}
+                  onChange={this.handleInputChange}
+                  onSelect={(data) => this.handleInputSelect(data, true)}
+                  ref="autocomplete"
+                  searchOptions={{
+                    location: new window.google.maps.LatLng(this.state.center.lat, this.state.center.lng),
+                    radius: 200 * 10
+                  }}
+                >
+                  {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
+                    <div>
+                      <input
+                        {...getInputProps({
+                          placeholder: this.props.searchText,
+                          className: 'location-search-input',
+                        })}
+                        style={{width : "calc(100% - 15px)", height : 43, border: "none",borderRadius : 4, paddingLeft : 15}}
+                      />
+                      <div className="autocomplete-dropdown-container">
+                        {loading && <div>Loading...</div>}
+                        {suggestions.map(suggestion => {
+                          const className = suggestion.active
+                            ? 'suggestion-item--active'
+                            : 'suggestion-item';
+                          // inline style for demonstration purpose
+                          const style = suggestion.active
+                            ? { backgroundColor: 'white', cursor: 'pointer', width : "calc(100% - 15px)", paddingLeft : 15 }
+                            : { backgroundColor: 'white', cursor: 'pointer', width : "calc(100% - 15px)", paddingLeft : 15 };
+                          return (
+                            <div
+                              {...getSuggestionItemProps(suggestion, {
+                                className,
+                                style,
+                              })}
+                              onClick={() => this.setSuggestion(suggestion, "autocomplete")}
+                            >
+                              <div style={{width : "100%", height : 28, paddingTop : 7.5, marginBottom : 2, fontWeight : "bold"}}>{suggestion.formattedSuggestion.mainText}</div>
+                              <div style={{width : "100%", height : 28, marginTop : 2, marginBottom : 2}}>{suggestion.formattedSuggestion.secondaryText}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </PlacesAutocomplete>
+              </View>
+            </View>
+            <Button title={'Submit'} onPress={()=>this.validateForm()}/>
+            <ConfirmModal/>
+          </View>
+        }>
       </BaseScreen>
     )
   }
 }
+
+const mapStateToProps = (state) => {
+	return state;
+};
+
+const mapDispatchToProps = (dispatch) => {
+	return {
+		showConfirmModal: () => dispatch(showConfirmModal()),
+	}
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Booking);

@@ -59,14 +59,15 @@ const STYLES = StyleSheet.create({
 	},
 	//HEADER.TSX
 	headerBar: {
-		minHeight: 70,
+    overflow: 'hidden',
+		height: 80,
 		backgroundColor:'black',
 		justifyContent: 'space-between',
-		alignItems:'flex-start',
+		alignItems:'center',
 		flexDirection: 'row'
 	},
 	headerLeftPart: {
-		backgroundColor:'black',
+    backgroundColor:'black',
 		flexDirection: 'row',
 		alignItems: 'center',
 	},

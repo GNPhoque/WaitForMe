@@ -16,14 +16,14 @@ export default class BaseScreen extends Component{
 			<View style={STYLES.screenContainer}>
 				<View>
 					<Header navigation={this.props.navigation}/>
-					<View>
-                        {Content}
-                    </View>
-                </View>
-                <View>
-                    <Footer/>
-                </View>
-            </View>
-        );
-    }
+        <View>
+        {Content}
+      </View>
+      </View>
+        <View>
+          <Footer/>
+        </View>
+      </View>
+    );
+  }
 }

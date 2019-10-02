@@ -3,10 +3,10 @@ import { View, Text, Image, TouchableOpacity, Button, Picker } from 'react-nativ
 import { connect } from 'react-redux';
 import MediaQuery from 'react-responsive';
 
-import AuthModal from '../components/AuthModal';
+import AuthModal from '../components/modal/AuthModal';
 import STYLES from '../constants/STYLES';
 import IMAGES from '../constants/IMAGES';
-import { navigate, getTranslation } from '../constants/HELPER';
+import { navigate, getTranslation, isLoggedIn } from '../constants/HELPER';
 import { setLanguage, showAuthModal } from '../reducers/reducerActions';
 
 class Header extends Component{
@@ -15,6 +15,8 @@ class Header extends Component{
 		this.state = { menuOpen: false };
 		this.getTranslation = getTranslation.bind(this);
 		this.navigate = navigate.bind(this);
+		this.isWider = isWider.bind(this);
+		this.isLoggedIn = isLoggedIn.bind(this);
 	}
 
 	changeLanguage = (language) => {
@@ -34,7 +36,12 @@ class Header extends Component{
 	}
 
 	getMenuItems = (style) => {
-		console.log(this.props.language)
+    const isLarge = this.isWider(750);
+    let viewStyle = isLarge ? {
+      
+    } : {
+
+    }
 		return(
 			<View style={style}>
 				<TouchableOpacity style={STYLES.links} onPress={()=>this.navigate('HomeScreen')}>
@@ -52,15 +59,32 @@ class Header extends Component{
 				<TouchableOpacity style={STYLES.links} onPress={()=>this.navigate('Contact')}>
 					<Text style={STYLES.text16}>{this.getTranslation('contact')}</Text>
 				</TouchableOpacity>
-				<TouchableOpacity style={STYLES.links} onPress={()=>this.props.showAuthModal()}>
-					<Text style={STYLES.text16}>{this.getTranslation('login')}</Text>
-				</TouchableOpacity>
-				<View style={{margin:8}}>
-					<Button onPress={()=>this.props.showAuthModal()} title={this.getTranslation('signup')}/>
-				</View>
+				{this.getAuthItems()}
 			</View> 
 		)
-	}
+  }
+  
+  getAuthItems = () => {
+    if (this.isLoggedIn()){
+      return (
+        <View>
+          <Text style={{color:'white'}}>{this.props.auth.user.email || 'email'}</Text>
+        </View>
+      );
+    }
+    else {
+      return(
+        <View style={{flexDirection: 'row'}}>
+          <TouchableOpacity style={STYLES.links} onPress={()=>this.props.showAuthModal()}>
+					<Text style={STYLES.text16}>{this.getTranslation('login')}</Text>
+          </TouchableOpacity>
+          <View style={{margin:8}}>
+            <Button onPress={()=>this.props.showAuthModal()} title={this.getTranslation('signup')}/>
+          </View>
+        </View>
+      );
+    }
+  }
 
 	getLargeScreenMenuItems = () => {
 		return this.getMenuItems(STYLES.headerRightPart)
@@ -76,8 +100,8 @@ class Header extends Component{
 					justifyContent: 'center'}}>
 				
 					<TouchableOpacity style={STYLES.links} >
-							<Text style={{color:'white', textAlign:'right'}} onPress={()=>this.setState({menuOpen:false})}>▶</Text>
-						</TouchableOpacity>
+            <Text style={{color:'white', textAlign:'right'}} onPress={()=>this.setState({menuOpen:false})}>▶</Text>
+          </TouchableOpacity>
 					<TouchableOpacity style={STYLES.links} onPress={()=>this.navigate('HomeScreen')}>
 						<Text style={STYLES.text16}>{this.getTranslation('home')}</Text>
 					</TouchableOpacity>
@@ -85,7 +109,7 @@ class Header extends Component{
 						<Image style={STYLES.headerFlag} source={this.getCurrentLanguageImage()}></Image>
 						<Picker
 							selectedValue={this.props.language.current}
-							style={{height: 50, width: 80, color : 'white', borderColor:'black', backgroundColor: 'black'}}
+							style={{height: 50, width: 80, alignItems:'center', color : 'white', borderColor:'black', backgroundColor: 'black'}}
 							onValueChange={(itemValue) => this.changeLanguage(itemValue)}>
 								{this.setPickerItems()}
 						</Picker>
@@ -93,12 +117,7 @@ class Header extends Component{
 					<TouchableOpacity style={STYLES.links} onPress={()=>this.navigate('Contact')}>
 						<Text style={STYLES.text16}>{this.getTranslation('contact')}</Text>
 					</TouchableOpacity>
-					<TouchableOpacity style={STYLES.links} onPress={()=>this.props.showAuthModal()}>
-						<Text style={STYLES.text16}>{this.getTranslation('login')}</Text>
-					</TouchableOpacity>
-					<View style={{margin:8}}>
-						<Button onPress={()=>this.props.showAuthModal()} title={this.getTranslation('signup')}/>
-					</View>
+					{this.getAuthItems()}
 				</View> 
 			)
 		}

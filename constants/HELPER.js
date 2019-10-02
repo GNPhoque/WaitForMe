@@ -1,6 +1,3 @@
-import React from 'react';
-import { Modal, View, Text, Button } from "react-native";
-import STYLES from "./STYLES";
 import { useMediaQuery } from 'react-responsive';
 
 export function navigate(screen){
@@ -12,6 +9,9 @@ export function getTranslation(field){
 }
 
 export function isWider(width){
-    const isDesktop = useMediaQuery({ minWidth: width });
-    return isDesktop;
+    return useMediaQuery({ minWidth: width });
+}
+
+export function isLoggedIn(){
+  return this.props.auth.isLoggedIn;
 }

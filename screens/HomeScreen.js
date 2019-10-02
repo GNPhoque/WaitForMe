@@ -2,11 +2,11 @@ import React, {Component} from 'react';
 import { View, Text, TouchableOpacity, Button } from 'react-native';
 import { connect } from 'react-redux';
 
-import STYLES from '../constants/STYLES';
+import { getTranslation, navigate, isWider } from '../constants/HELPER';
 import BaseScreen from '../layout/BaseComponent';
-import { getTranslation, navigate } from '../constants/HELPER';
-import AuthModal from '../components/AuthModal';
+import AuthModal from '../components/modal/AuthModal';
 import firebase from '../firebase';
+import STYLES from '../constants/STYLES';
 
 
 class HomeScreen extends Component{
@@ -17,24 +17,33 @@ class HomeScreen extends Component{
 		this.navigate = navigate.bind(this);
 	}
 
+  createUserFromFrontendFirebase = () => {
+    firebase.auth().createUserWithEmailAndPassword('support@wait', 'aaaaaa').catch((error) => {
+      console.error(error.code);
+      console.error(error.message);
+      console.error(this.getTranslation(error.code) || `${error.code} : ${error.message}`);
+      return;
+    });
+  }
+
+  logout = () => {
+    firebase.auth().signOut()
+    .catch((error)=>console.error(error));
+  }
+
 	testClick = () => {
-		var addMessage = firebase.functions().httpsCallable('testOnCall');
-		addMessage({email: "lafont_jordan@hotmail.fr", password: 'azeaze' })
-		.then((result) => {
-			// Read result of the Cloud Function.
-			console.log(result)
-			if(result.data.errorInfo){
-				console.log(result.data.errorInfo.message)
-			}
-			this.setState({message: result.data});
-		}).catch(function(error) {
-			// Getting the Error details.
-			var code = error.code;
-			var message = error.message;
-			var details = error.details;
-			// ...
-			console.log(error);
-		});
+    firebase.auth().signInWithEmailAndPassword('lafont_jordan@hotmail.fr', 'azeaze')
+    // .then((data)=>{
+    //   console.log('AUTH SUCCESS');
+    //   data.user.getIdTokenResult().then((token)=>{
+    //     console.log(token)
+    //   })
+    // })
+    .catch(function(error) {
+      console.error('AUTH FAILURE');
+      console.error(error);
+      console.error(error.message);
+    });
 	}
 
 	componentDidMount(){
@@ -61,7 +70,7 @@ class HomeScreen extends Component{
 								</View>
 								<View style={{flexDirection: 'column', justifyContent: 'flex-end'}}>
 									<TouchableOpacity style={{margin:8}}>
-										<Button onPress={()=>this.navigate('Contact')} title={this.getTranslation('hireWaiter')}/>
+										<Button onPress={()=>this.navigate('Booking')} title={this.getTranslation('hireWaiter')}/>
 									</TouchableOpacity>
 								</View>
 							</View>
@@ -77,6 +86,8 @@ class HomeScreen extends Component{
 									<TouchableOpacity style={{margin:8}}>
 										{/* <Button onPress={()=>this.setState({modal:this.navigate('Contact')})} title={this.getTranslation('becomeWaiter')}/> */}
 										<Button onPress={()=>this.testClick()} title={this.getTranslation('becomeWaiter')}/>
+										<Button onPress={()=>this.logout()} title={'LOGOUT'}/>
+										<Button onPress={()=>this.createUserFromFrontendFirebase()} title={'LOGOUT'}/>
 									</TouchableOpacity>
 								</View>
 							</View>

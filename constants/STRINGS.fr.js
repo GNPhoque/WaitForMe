@@ -26,9 +26,14 @@ const STRINGS = {
 	"waitDesc2": "Stand au Paris Games Week : jusqu'à 5 heures",
 	"waitDesc3": "Sortie de smartphone : jusqu'à 10 heures",
 	"waitDesc4": "Pas de panique, on s'en charge pour vous!",
-	"hireWaiter": "Engagez un waiter !",
+	"hireWaiter": "Reservez un wait !",
 	"engage1": "Offrez de votre temps et générez des revenus",
 	"becomeWaiter": "Devenez un waiter !",
+  
+  //BOOKING
+  "distanceFee": "Attention, pour les lieux en dehors de Paris, des frais supplémentaires peuvent s'appliquer.",
+  "errorDate": "La date de réservation doit être dans 24h au minimum.",
+  "errorAddress": "L'adresse renseignée n'est pas valide.",
 
 	//FOOTER
 	"contactUs": "Contactez nous",

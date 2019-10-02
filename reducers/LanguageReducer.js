@@ -1,8 +1,10 @@
 import { combineReducers } from 'redux';
+
+import modalReducer from './ModalReducer';
+import authReducer from './AuthReducer';
 import STRINGS_en from '../constants/STRINGS.en';
 import STRINGS_fr from '../constants/STRINGS.fr';
 import IMAGES from '../constants/IMAGES';
-import modalReducer from './ModalReducer';
 
 const INITIAL_STATE = {
   current: 'Français',
@@ -31,5 +33,6 @@ const languageReducer = (state = INITIAL_STATE, action) => {
 
 export default combineReducers({
 	language: languageReducer,
-	modal: modalReducer
+  modal: modalReducer,
+  auth: authReducer
 });

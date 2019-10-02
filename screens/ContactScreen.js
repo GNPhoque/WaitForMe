@@ -72,19 +72,21 @@ class ContactScreen extends Component{
 	}
 
 	render(){
-		console.log(this.state);
 		return(
 			<View style={STYLES.screenContainer}>
 				<View>
 					<Header navigation={this.props.navigation}/>
 					<Text>Contact Screen</Text>
-					<View>
+					<View style={{
+    backgroundColor: '#fff',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between'}}>
 						<Text style={STYLES.validationError}>{this.state.errors.mail}</Text>
-						<TextInput placeholder="Your mail" onChangeText={(mail) => this.setState({mail})}/>
+						<TextInput style={{ borderWidth:1, margin: 8 }} placeholder="Your mail" onChangeText={(mail) => this.setState({mail})}/>
 						<Text style={STYLES.validationError}>{this.state.errors.subject}</Text>
-						<TextInput placeholder="Subject" onChangeText={(subject) => this.setState({subject})}/>
+						<TextInput style={{ borderWidth:1, margin: 8 }} placeholder="Subject" onChangeText={(subject) => this.setState({subject})}/>
 						<Text style={STYLES.validationError}>{this.state.errors.message}</Text>
-						<TextInput placeholder="Your message" onChangeText={(message) => this.setState({message})} multiline={true} numberOfLines={15}/>
+						<TextInput style={{ borderWidth:1, margin: 8 }} placeholder="Your message" onChangeText={(message) => this.setState({message})} multiline={true} numberOfLines={15}/>
 					</View>
 					<Button title="SEND MAIL" onPress={()=>this.sendMail()}/>
 				</View>

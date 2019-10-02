@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { View, Text, Button, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { connect } from 'react-redux';
-import firebase from '../firebase';
+import firebase from '../../firebase';
 
 class EmailVerification extends Component{
     constructor(props){
