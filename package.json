@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
-    "@expo/webpack-config": "^0.7.4",
+    "@expo/webpack-config": "^0.17.3",
     "babel-jest": "24.1.0",
     "jest": "24.1.0",
     "metro-react-native-babel-preset": "0.54.0",
